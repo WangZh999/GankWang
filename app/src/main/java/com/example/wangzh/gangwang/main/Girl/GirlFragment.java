@@ -1,6 +1,5 @@
-package com.example.wangzh.gangwang;
+package com.example.wangzh.gangwang.main.Girl;
 
-import android.net.sip.SipAudioCall;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,8 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.wangzh.gangwang.R;
 import com.example.wangzh.gangwang.data.base.Girl;
-import com.example.wangzh.gangwang.util.APP;
+import com.example.wangzh.gangwang.main.MainActivityContract;
+import com.example.wangzh.gangwang.main.MainPresenter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,47 +23,73 @@ import java.util.List;
  * Created by WangZh on 2017/3/20.
  */
 
-public class GirlFragment extends Fragment {
+public class GirlFragment extends Fragment implements MainActivityContract.View{
+    private static GirlFragment mGirlFragment;
+    //private  MainActivityContract.Activity mActivityContract;
     private Girl mGirl;
     private List<Girl> mGirlList;
     private RecyclerView mRecyclerView;
     private GirlListAdapter mGirlListAdapter;
     private StaggeredGridLayoutManager mStaggeredGridLayoutManager;
-    //listener
-    private SipAudioCall.Listener mGirlListener;
+    //mPresenter
+    private MainPresenter mMainPresenter;
+
+    private final int num = 10;
+    private static int page = 0;
+
+
+    public GirlFragment(){
+    }
+
+
+    public static GirlFragment getInstance(MainActivityContract.Activity contract){
+        if (mGirlFragment==null){
+            mGirlFragment=new GirlFragment();
+        }
+        return mGirlFragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.girl_frag,container,false);
         Log.d("fragment","create start");
-        mGirlList =new ArrayList<Girl>();
-        for (int i=0;i<20;i++){
-            Girl girl=new Girl();
-            String desc="wang";
-            for (int j=0;j<i+5;j++){
-                desc+="wang";
-            }
-            girl.desc=desc;
-            mGirlList.add(girl);
 
+
+        //for test
+        if (mGirlList == null) {
+            mGirlList =new ArrayList<Girl>();
+            page = 1;
+            mMainPresenter.getGirlData(num, 1);
+
+            //mMainPresenter.getGirlData(num, 2);
         }
 
         //set up recycler view
         mRecyclerView=(RecyclerView)view.findViewById(R.id.recyclerView_Girl);
         mRecyclerView.setHasFixedSize(true);
-        mStaggeredGridLayoutManager=new StaggeredGridLayoutManager(2, OrientationHelper.VERTICAL);
+        mStaggeredGridLayoutManager = new StaggeredGridLayoutManager(2, OrientationHelper.VERTICAL);
         mRecyclerView.setLayoutManager(mStaggeredGridLayoutManager);
-        mGirlListAdapter =new GirlListAdapter(APP.getContext(),mGirlList);
+
+        mGirlListAdapter = new GirlListAdapter(mGirlList);
+        mGirlListAdapter.setPresenter(mMainPresenter);
         mRecyclerView.setAdapter(mGirlListAdapter);
+
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             private int lastVisibleItem;
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if (lastVisibleItem==mStaggeredGridLayoutManager.getItemCount()-1){
+                if ((newState == RecyclerView.SCROLL_STATE_IDLE)
+                        && (lastVisibleItem == mStaggeredGridLayoutManager.getItemCount() - 1)) {
                     //Toast.makeText(APP.getContext(),"last",Toast.LENGTH_SHORT).show();
-                    //System.out.println("last");
+                    page++;
+                    mMainPresenter.getGirlData(num, page);
                 }
             }
 
@@ -89,5 +116,23 @@ public class GirlFragment extends Fragment {
             }
         }
         return max;
+    }
+
+
+    @Override
+    public void setPresenter(MainPresenter presenter) {
+        mMainPresenter = presenter;
+    }
+
+    @Override
+    public void addData(List<?> data) {
+
+        if (data != null) {
+            for (Object girl : data) {
+                mGirlList.add((Girl) girl);
+            }
+        }
+        mGirlListAdapter.notifyDataSetChanged();
+
     }
 }

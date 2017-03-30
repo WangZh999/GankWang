@@ -1,17 +1,17 @@
-package com.example.wangzh.gangwang;
+package com.example.wangzh.gangwang.main.Girl;
 
-import android.content.Context;
-import android.net.sip.SipAudioCall;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.wangzh.gangwang.R;
 import com.example.wangzh.gangwang.data.base.Girl;
+import com.example.wangzh.gangwang.data.get.GetImage;
+import com.example.wangzh.gangwang.main.MainPresenter;
+import com.example.wangzh.gangwang.util.APP;
 
 import java.util.List;
 
@@ -20,30 +20,30 @@ import java.util.List;
  */
 
 public class GirlListAdapter extends RecyclerView.Adapter{
-    private Context mContext;
     private List<Girl> mGirlList;
-    private ProgressBar mProgressBar;
-    //listener
-    SipAudioCall.Listener listener;
+    //mPresenter
+    private MainPresenter mMainPresenter;
+    private GetImage mGetImage;
+
+    private static final int imgWidth = APP.getWidth() / 2;
 
 
-    GirlListAdapter(Context context, List<Girl> girlList){
-        this.mContext=context;
+    GirlListAdapter( List<Girl> girlList){
         this.mGirlList=girlList;
-        Log.d("girlListAdapter","create adapter");
+        mGetImage = GetImage.getInstance();
     }
 
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.girl_item,parent,false);
-        Log.d("girlListAdapter","onCreateViewHolder");
-        return new ViewHolder(view);
+        View view= LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.girl_item,parent,false);
+        return new GirlViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-        ViewHolder viewHolder=(ViewHolder)holder;
+        GirlViewHolder viewHolder=(GirlViewHolder)holder;
         Girl girl=mGirlList.get(position);
         int limit=48;
         String text = girl.desc.length() < limit ? girl.desc : girl.desc.substring(0, limit) + "...";
@@ -53,46 +53,38 @@ public class GirlListAdapter extends RecyclerView.Adapter{
 
         //set up girl image view here
         viewHolder.girlView.setImageResource(R.mipmap.ic_launcher);
-
-        Log.d("girlListAdapter","onBindViewHolder");
+        viewHolder.girlView.setMinimumHeight(300);
+        mGetImage.displayImage(viewHolder.girlView, girl.url, imgWidth);
     }
 
-    @Override
-    public void onViewRecycled(RecyclerView.ViewHolder holder) {
-        super.onViewRecycled(holder);
-    }
 
     @Override
     public int getItemCount() {
         return mGirlList.size();
     }
 
-    public void setListener(SipAudioCall.Listener listener){
-        this.listener=listener;
+    public void setPresenter(MainPresenter presenter){
+        this.mMainPresenter = presenter;
     }
 
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    private class GirlViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         ImageView girlView;
         TextView textView;
         View card;
         Girl girl;
 
-        public ViewHolder(View viewItem){
+        public GirlViewHolder(View viewItem){
             super(viewItem);
             card =viewItem;
             girlView=(ImageView)viewItem.findViewById(R.id.img_girl_item);
             textView=(TextView)viewItem.findViewById(R.id.text_girl_item);
-            //ButterKnife.bind(this, itemView);
             card.setOnClickListener(this);
-
-            Log.d("Adapter.ViewHolder","create");
         }
 
         @Override
         public void onClick(View v) {
-            //set up on click lister
-            //listener;
+            mMainPresenter.startGirlActivity(girl.url);
         }
     }
 }

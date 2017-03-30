@@ -7,14 +7,24 @@ import java.util.Date;
  */
 
 public class Girl {
-    public String url;
-    public String type;
-    public String desc;
-    public String who;
-    public boolean used;
+    public String _id;
     public Date createdAt;
-    public Date updatedAt;
+    public String desc;
     public Date publishedAt;
+    public String source;
+    public String type;
+    public String url;
+    public boolean used;
+    public String who;
+
+
     public int imageWidth;
     public int imageHeight;
+
+    @Override
+    public String toString() {
+        return "url: "+url
+                +"      createAt: "+createdAt
+                +"      desc: "+desc+"";
+    }
 }
